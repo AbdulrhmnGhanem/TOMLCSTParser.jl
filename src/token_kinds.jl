@@ -1,7 +1,8 @@
 @enum(Kind::Int16,
     NONE,       # Placeholder; never emitted by lexer
     EOF,        # EOF
-    WHITESPACE, # '  or \t'
+    SPACE,      # '  or \t'
+    NEWLINE,    # \n
 #! format: off
     # See TOML specification https://toml.io/en/v1.0.0
     COMMENT,  # # comment
@@ -78,7 +79,6 @@
 
     begin_error,
         ERROR,
-        EOF_CHAR,
         # Borrowed from https://github.com/JuliaLang/TOML.jl/blob/057a427116b5874b2e4732485088a42d6ad15689/src/parser.jl#L160
         # Toplevel #
         ErrRedefineTableArray,
@@ -143,6 +143,7 @@ is_error(k::Kind) = begin_error < k < end_error
 
 # Borrowed from https://github.com/JuliaLang/TOML.jl/blob/057a427116b5874b2e4732485088a42d6ad15689/src/parser.jl#L213
 const TOKEN_ERROR_DESCRIPTION = Dict(
+    ERROR => "interal parser error",
     ErrTrailingCommaInlineTable => "trailing comma not allowed in inline table",
     ErrExpectedCommaBetweenItemsArray => "expected comma between items in array",
     ErrExpectedCommaBetweenItemsInlineTable => "expected comma between items in inline table",

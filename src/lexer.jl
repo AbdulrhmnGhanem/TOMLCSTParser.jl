@@ -1,5 +1,9 @@
 module Lexers
+import ..Tokens
 import ..Tokens: Token, Kind, ERROR, is_error
+
+include("utilities.jl")
+
 struct StringState
     triplestr::Bool
     raw::Bool
@@ -31,27 +35,37 @@ function Lexer(io::IO)
     c1, p1 = ' ', position(io)
 
     if eof(io)
-        c2, p2 = Kind.EOF_CHAR, p1
-        c3, p3 = Kind.EOF_CHAR, p1
-        c4, p4 = Kind.EOF_CHAR, p1
+        c2, p2 = EOF_CHAR, p1
+        c3, p3 = EOF_CHAR, p1
+        c4, p4 = EOF_CHAR, p1
     else
         c2, p2 = read(io, Char), position(io)
 
         if eof(io)
-            c3, p3 = Kind.EOF_CHAR, p1
-            c4, p4 = Kind.EOF_CHAR, p1
+            c3, p3 = EOF_CHAR, p1
+            c4, p4 = EOF_CHAR, p1
         else
             c3, p3 = read(io, Char), position(io)
             if eof(io)
-                c4, p4 = Kind.EOF_CHAR, p1
+                c4, p4 = EOF_CHAR, p1
             else
                 c4, p4 = read(io, Char), position(io)
             end
         end
     end
-    Lexer(io, position(io), 1, 1, position(io), 1, 1, position(io),
-        ERROR, Vector{StringState}(), IOBuffer(),
-        (c1, c2, c3, c4), (p1, p2, p3, p4), false)
+    Lexer(
+        io,
+        position(io),
+        1, 1,
+        position(io),
+        1, 1,
+        position(io),
+        ERROR,
+        Vector{StringState}(),
+        IOBuffer(),
+        (c1, c2, c3, c4),
+        (p1, p2, p3, p4),
+        false)
 end
 
 Lexer(str::AbstractString) = Lexer(IOBuffer(str))
@@ -79,15 +93,15 @@ function Base.iterate(l::Lexer)
 
     l.current_row = 1
     l.current_col = 1
-    l.current_pos = l.io_startpos
+    l.current_pos = l.io_start_pos
     t = next_token(l)
-    return t, t.kind == Kind.EOF
+    return t, t.kind == Tokens.EOF
 end
 
 function Base.iterate(l::Lexer, isdone::Any)
     isdone && return nothing
     t = next_token(l)
-    return t, t.kind == Kind.EOF
+    return t, t.kind == Tokens.EOF
 end
 
 function Base.show(io::IO, l::Lexer)
@@ -108,7 +122,7 @@ Set a new starting position.
 """
 startpos!(l::Lexer, i::Integer) = l.token_startpos = i
 
-Base.seekstart(l::Lexer) = seek(l.io, l.io_startpos)
+Base.seekstart(l::Lexer) = seek(l.io, l.io_start_pos)
 
 """
     seek2startpos!(l::Lexer)
@@ -220,17 +234,8 @@ end
 Returns a `Token` of kind `kind` with contents `str` and starts a new `Token`.
 """
 function emit(l::Lexer, kind::Kind)
-    suffix = false
-    if optakessuffix(kind)
-        while isopsuffix(peekchar(l))
-            readchar(l)
-            suffix = true
-        end
-    end
+    tok = Token(kind, startpos(l), position(l) - 1)
 
-    tok = Token(kind, startpos(l), position(l) - 1, l.dotop, suffix)
-
-    l.dotop = false
     l.last_token = kind
     return tok
 end
@@ -259,5 +264,50 @@ function next_token(l::Lexer, start=true)
     else
         _next_token(l, readchar(l))
     end
+end
+
+function _next_token(l::Lexer, c)
+    if eof(c)
+        return emit(l, Tokens.EOF)
+    elseif isspace(c)
+        return lex_space(l, c)
+    elseif c == '#'
+        return lex_comment(l, c)
+    else
+        return emit(l, Tokens.NONE)
+    end
+end
+
+function lex_space(l::Lexer, c)
+    k = Tokens.SPACE
+    while true
+        if c == '\n'
+            k = Tokens.NEWLINE
+        end
+        pc = peekchar(l)
+
+        if !isspace(pc)
+            # End the token at `c` if the following character isn't a space
+            break
+        end
+
+        if k == Tokens.NEWLINE && pc == '\n'
+            # Each newline is a token by itself.
+            break
+        end
+        c = readchar(l)
+    end
+    return emit(l, k)
+end
+
+function lex_comment(l::Lexer, c)
+    while true
+        pc = peekchar(l)
+        if pc == '\n' || eof(pc)
+            return emit(l, Tokens.COMMENT)
+        end
+        readchar(l)
+    end
+
 end
 end # module

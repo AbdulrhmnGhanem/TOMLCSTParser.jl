@@ -5,8 +5,8 @@ include("token_kinds.jl")
 
 struct Token
     kind::Kind
-    startByte::Int
-    endByte::Int
+    startbyte::Int
+    endbyte::Int
 end
 
 function kind(t::Token)
