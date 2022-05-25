@@ -73,5 +73,55 @@
             INLINE_TABLE,  # name = { first = "Tom", last = "Preston-Werner" }, point = { x = 1, y = 2 }, animal = { type.name = "pug" }
         end_table,
     end_syntax,
+
+    begin_error,
+        # Borrowed from https://github.com/JuliaLang/TOML.jl/blob/057a427116b5874b2e4732485088a42d6ad15689/src/parser.jl#L160
+        # Toplevel #
+        ErrRedefineTableArray,
+        ErrExpectedNewLineKeyValue,
+        ErrAddKeyToInlineTable,
+        ErrAddArrayToStaticArray,
+        ErrArrayTreatedAsDictionary,
+        ErrExpectedEndOfTable,
+        ErrExpectedEndArrayOfTable,
+
+        # Keys #
+        ErrExpectedEqualAfterKey,
+        # TODO: Check, are these the same?
+        ErrDuplicatedKey,
+        ErrKeyAlreadyHasValue,
+        ErrInvalidBareKeyCharacter,
+        ErrEmptyBareKey,
+
+        # Values #
+        ErrUnexpectedEofExpectedValue,
+        ErrUnexpectedStartOfValue,
+        ErrGenericValueError,
+
+        # Arrays
+        ErrExpectedCommaBetweenItemsArray,
+
+        # Inline tables
+        ErrExpectedCommaBetweenItemsInlineTable,
+        ErrTrailingCommaInlineTable,
+
+        # Numbers
+        ErrUnderscoreNotSurroundedByDigits,
+        ErrLeadingZeroNotAllowedInteger,
+        ErrOverflowError,
+        ErrLeadingDot,
+        ErrNoTrailingDigitAfterDot,
+        ErrTrailingUnderscoreNumber,
+
+        # DateTime
+        ErrParsingDateTime,
+        ErrOffsetDateNotSupported,
+
+        # Strings
+        ErrNewLineInString,
+        ErrUnexpectedEndString,
+        ErrInvalidEscapeCharacter,
+        ErrInvalidUnicodeScalar,
+    end_error,
 #! format: on
 )
