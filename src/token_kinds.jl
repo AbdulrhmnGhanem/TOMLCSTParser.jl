@@ -10,6 +10,7 @@
     MINUS,    # -
 
     begin_keys,
+        KEY,
         BARE_KEY,    # key = ... , bare_key = ..., bare-key = ..., and 1234 = ...
         QUOTED_KEY,  # "127.0.0.1" =..., "character encoding" = ..., "ʎǝʞ" = ..., 'quoted "value"' = ...
         DOTTED_KEY,  # physical.color = ..., site."google.com" = ...
@@ -30,6 +31,7 @@
     end_delimiters,
 
     begin_values,
+        VALUE,
         begin_string,
             BASIC_STRING,             # "..."
             MULTILINE_BASIC_STRING,   # """..."""
@@ -75,6 +77,7 @@
     end_syntax,
 
     begin_error,
+        Err,
         # Borrowed from https://github.com/JuliaLang/TOML.jl/blob/057a427116b5874b2e4732485088a42d6ad15689/src/parser.jl#L160
         # Toplevel #
         ErrRedefineTableArray,
@@ -125,3 +128,54 @@
     end_error,
 #! format: on
 )
+
+is_key(k::Kind) = begin_keys < k < end_keys
+is_delimiter(k::Kind) = begin_delimiters < k < end_delimiters
+is_value(k::Kind) = begin_values < k < end_values
+is_string(k::Kind) = begin_string < k < end_string
+is_integer(k::Kind) = begin_integer < k < end_integer
+is_float(k::Kind) = begin_float < k < end_float
+is_boolean(k::Kind) = begin_boolean < k < end_boolean
+is_datetime(k::Kind) = begin_datetime < k < end_datetime
+is_error(k::Kind) = begin_error < k < end_error
+
+
+# Borrowed from https://github.com/JuliaLang/TOML.jl/blob/057a427116b5874b2e4732485088a42d6ad15689/src/parser.jl#L213
+const TOKEN_ERROR_DESCRIPTION = Dict(
+    ErrTrailingCommaInlineTable => "trailing comma not allowed in inline table",
+    ErrExpectedCommaBetweenItemsArray => "expected comma between items in array",
+    ErrExpectedCommaBetweenItemsInlineTable => "expected comma between items in inline table",
+    ErrExpectedEndArrayOfTable => "expected array of table to end with ']]'",
+    ErrInvalidBareKeyCharacter => "invalid bare key character",
+    ErrRedefineTableArray => "tried to redefine an existing table as an array",
+    ErrDuplicatedKey => "key already defined",
+    ErrKeyAlreadyHasValue => "key already has a value",
+    ErrEmptyBareKey => "bare key cannot be empty",
+    ErrExpectedNewLineKeyValue => "expected newline after key value pair",
+    ErrNewLineInString => "newline character in single quoted string",
+    ErrUnexpectedEndString => "string literal ened unexpectedly",
+    ErrExpectedEndOfTable => "expected end of table ']'",
+    ErrAddKeyToInlineTable => "tried to add a new key to an inline table",
+    ErrArrayTreatedAsDictionary => "tried to add a key to an array",
+    ErrAddArrayToStaticArray => "tried to append to a statically defined array",
+    ErrGenericValueError => "failed to parse value",
+    ErrLeadingZeroNotAllowedInteger => "leading zero in integer not allowed",
+    ErrUnderscoreNotSurroundedByDigits => "underscore is not surrounded by digits",
+    ErrUnexpectedStartOfValue => "unexpected start of value",
+    ErrOffsetDateNotSupported => "offset date-time is not supported",
+    ErrParsingDateTime => "parsing date/time value failed",
+    ErrTrailingUnderscoreNumber => "trailing underscore in number",
+    ErrLeadingDot => "floats require a leading zero",
+    ErrExpectedEqualAfterKey => "expected equal sign after key",
+    ErrNoTrailingDigitAfterDot => "expected digit after dot",
+    ErrOverflowError => "overflowed when parsing integer",
+    ErrInvalidUnicodeScalar => "invalid Unicode scalar",
+    ErrInvalidEscapeCharacter => "invalid escape character",
+    ErrUnexpectedEofExpectedValue => "unexpected end of file, expected a value"
+)
+
+for kind in instances(Kind)
+    if is_error(kind)
+        @assert haskey(TOKEN_ERROR_DESCRIPTION, kind) "$kind does not have an error message"
+    end
+end
