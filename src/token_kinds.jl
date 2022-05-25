@@ -77,7 +77,8 @@
     end_syntax,
 
     begin_error,
-        Err,
+        ERROR,
+        EOF_CHAR,
         # Borrowed from https://github.com/JuliaLang/TOML.jl/blob/057a427116b5874b2e4732485088a42d6ad15689/src/parser.jl#L160
         # Toplevel #
         ErrRedefineTableArray,
