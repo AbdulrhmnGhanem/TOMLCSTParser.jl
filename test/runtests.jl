@@ -46,10 +46,20 @@ end
 
     kinds = [T.QUOTED_KEY, T.EQ, T.BASIC_STRING, T.NEWLINE,
         T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.NEWLINE,
-        T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.EOF
-    ]
-
+        T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.EOF]
     for (i, n) in enumerate(tokenized_quoted_keys)
+        @test T.kind(n) == kinds[i]
+    end
+
+    empty_quoted_keys = """
+    "" = "value"
+    '' = "value\""""
+
+    tokenized_empty_quoted_keys = tokenize(empty_quoted_keys)
+
+    kinds = [T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.NEWLINE,
+        T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.EOF]
+    for (i, n) in enumerate(tokenized_empty_quoted_keys)
         @test T.kind(n) == kinds[i]
     end
 end
