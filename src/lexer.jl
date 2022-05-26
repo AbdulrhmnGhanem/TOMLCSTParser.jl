@@ -276,6 +276,8 @@ function _next_token(l::Lexer, c)
         return lex_comment(l, c)
     elseif c == '='
         return emit(l, Tokens.EQ)
+    elseif c == '\'' || c == '"'
+        return lex_string(l, c)
     elseif is_bare_key_start_cahr(c)
         return lex_bare_key(l, c)
     else
@@ -310,6 +312,35 @@ function lex_comment(l::Lexer, c)
         pc = peekchar(l)
         if pc == '\n' || eof(pc)
             return emit(l, Tokens.COMMENT)
+        end
+        readchar(l)
+    end
+end
+
+function lex_string(l::Lexer, c)
+    is_multiline_string = dpeekchar(l) == (c, c)
+    if is_multiline_string
+        readchar(l)
+        readchar(l)
+
+        while true
+            tc = peekchar3(l)
+            if tc == (c, c, c)
+                readchar(l)
+                readchar(l)
+                readchar(l)
+                return emit(l, c == '"' ? Tokens.MULTILINE_BASIC_STRING : Tokens.MULTILINE_LITERAL_STRING)
+            end
+            readchar(l)
+        end
+    end
+
+    while true
+        pc = peekchar(l)
+
+        if pc == c
+            readchar(l)
+            return emit(l, c == '"' ? Tokens.BASIC_STRING : Tokens.LITERAL_STRING)
         end
         readchar(l)
     end
