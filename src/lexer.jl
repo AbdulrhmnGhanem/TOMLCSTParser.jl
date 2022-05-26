@@ -266,6 +266,7 @@ function next_token(l::Lexer, start=true)
     end
 end
 
+@assert length(instances(Kind)) == 100 "Make sure to come back to `_next_token` wheever `Kind` changes"
 function _next_token(l::Lexer, c)
     if eof(c)
         return emit(l, Tokens.EOF)
