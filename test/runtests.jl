@@ -19,3 +19,19 @@ using .TOMLCSTParser: Tokens as T, tokenize
     end
 end
 
+@testset "tokenize bare keys" begin
+    bare_keys = """
+    bareKey  = # comment
+    bare-key = 
+    bare_key    = 
+    1234="""
+    tokenized_bare_keys = tokenize(bare_keys)
+
+    kinds = [T.BARE_KEY, T.SPACE, T.EQ, T.SPACE, T.COMMENT, T.NEWLINE,
+        T.BARE_KEY, T.SPACE, T.EQ, T.NEWLINE,
+        T.BARE_KEY, T.SPACE, T.EQ, T.NEWLINE,
+        T.BARE_KEY, T.EQ, T.EOF]
+    for (i, n) in enumerate(tokenized_bare_keys)
+        @test T.kind(n) == kinds[i]
+    end
+end

@@ -11,9 +11,9 @@ end
 
 function kind(t::Token)
     k = t.kind
-    is_key(k) && return KEY
-    is_value(k) && return VALUE
-    is_error(k) && return Err
+    # is_key(k) && return KEY
+    # is_value(k) && return VALUE
+    # is_error(k) && return Err
     return k
 end
 

@@ -274,6 +274,10 @@ function _next_token(l::Lexer, c)
         return lex_space(l, c)
     elseif c == '#'
         return lex_comment(l, c)
+    elseif c == '='
+        return emit(l, Tokens.EQ)
+    elseif is_bare_key_start_cahr(c)
+        return lex_bare_key(l, c)
     else
         return emit(l, Tokens.NONE)
     end
@@ -309,6 +313,15 @@ function lex_comment(l::Lexer, c)
         end
         readchar(l)
     end
+end
 
+function lex_bare_key(l::Lexer, c)
+    while true
+        pc = peekchar(l)
+        if isspace(pc) || pc == '='
+            return emit(l, Tokens.BARE_KEY)
+        end
+        readchar(l)
+    end
 end
 end # module
