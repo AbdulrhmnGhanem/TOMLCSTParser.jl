@@ -60,7 +60,7 @@ function Lexer(io::IO)
         position(io),
         1, 1,
         position(io),
-        ERROR,
+        Tokens.NONE,
         Vector{StringState}(),
         IOBuffer(),
         (c1, c2, c3, c4),
@@ -340,6 +340,10 @@ function lex_string(l::Lexer, c)
 
         if pc == c
             readchar(l)
+            # handle quoted keys
+            if l.last_token == Tokens.NEWLINE || l.last_token == Tokens.NONE
+                return emit(l, Tokens.QUOTED_KEY)
+            end
             return emit(l, c == '"' ? Tokens.BASIC_STRING : Tokens.LITERAL_STRING)
         end
         readchar(l)

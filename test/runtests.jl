@@ -36,6 +36,23 @@ end
     end
 end
 
+@testset "tokenize quoted keys" begin
+    quoted_keys = """
+    "quoted_key"="string"
+    "ʎǝʞ" = "value"
+    'quoted "value"' = "value\""""
+
+    tokenized_quoted_keys = tokenize(quoted_keys)
+
+    kinds = [T.QUOTED_KEY, T.EQ, T.BASIC_STRING, T.NEWLINE,
+        T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.NEWLINE,
+        T.QUOTED_KEY, T.SPACE, T.EQ, T.SPACE, T.BASIC_STRING, T.EOF
+    ]
+
+    for (i, n) in enumerate(tokenized_quoted_keys)
+        @test T.kind(n) == kinds[i]
+    end
+end
 
 @testset "tokenize strings" begin
     string = """
